@@ -119,18 +119,18 @@ void check_args(int argc, char *argv[], std::vector <char> &c_fl) {
 }
 
 unsigned int t(const unsigned int& a) {
-  unsigned int subVal[8];
-  unsigned int highligh = 15;
-  for (size_t i = 0; i < 8; i++) {
+  unsigned int subVal[8];     //Массив для примениния нелинейного биективного преобразования
+  unsigned int highligh = 15; //Помогает выделять 4 бита
+  for (size_t i = 0; i < 8; i++) {      //Разбиение текста по 4 бита
     subVal[i] = (a & highligh) >> i * 4;
     highligh = highligh << 4;
   }
-  for (size_t i = 0; i < 8; i++) {
+  for (size_t i = 0; i < 8; i++) { //нелинейное биективное преобразование
     unsigned int tmp = subVal[i];
     subVal[i] = pi[i][tmp];
   }
   unsigned int ans = 0;
-  for (size_t i = 0; i < 8; i++) {
+  for (size_t i = 0; i < 8; i++) { //Формирование текста по 4 битам
     ans += (subVal[i] << (4 * i));
   }
   return ans;
@@ -138,11 +138,11 @@ unsigned int t(const unsigned int& a) {
 
 unsigned int g(const unsigned int& key, const unsigned int& a0) {
   unsigned int Sum = t(key + a0);
-  return ((Sum << 11) + ((Sum & (2047 << 21)) >> 21));
+  return ((Sum << 11) + ((Sum & (2047 << 21)) >> 21));  //Делаем циклический сдвиг влево на 11
 }
 
 void G(const unsigned int& key, unsigned int& a1, unsigned int& a0) {
-  unsigned char A1 = a1;
+  unsigned long A1 = a1;  //Сохраняем старое значение а1
   a1 = a0;
   a0 = g(key, a0) ^ A1;
 }
@@ -589,9 +589,9 @@ void rsv(std::vector<unsigned char>& vec, unsigned int shiftAmount) {
 }
 
 void ecb(int choose,
-            const std::vector <unsigned char> &text,
-            std::vector <unsigned char> &ctext,
-            std::vector <unsigned char> &etext,
+            const std::vector <unsigned long long> &text,
+            std::vector <unsigned long long> &ctext,
+            std::vector <unsigned long long> &etext,
             const std::vector <unsigned int> &key) {
   unsigned int a0, a1;
   std::ofstream outfile("my.bin", std::ios::binary);
@@ -611,7 +611,7 @@ void ecb(int choose,
       for (size_t j = 1; j < 32; j++) {
         G(key[j], a1, a0);
       }
-      ctext[i] = (( ((unsigned char)g(key[32], a0)) ^ a1) << 32) + a0;
+      ctext[i] = (( ((unsigned long long)g(key[32], a0)) ^ a1) << 32) + a0;
     }
     outfile.write(reinterpret_cast<const char*>(ctext.data()), ctext.size());
          	  outfile.close();
@@ -826,9 +826,9 @@ void test(const std::vector<unsigned long long>& vec) {
 int main(int argc, char *argv[])
 {
     		std::vector<unsigned char>	otext;
-		    std::vector <unsigned char> text;
-		    std::vector <unsigned char> ctext;
-		    std::vector <unsigned char> etext;
+		    std::vector <unsigned long long> text;
+		    std::vector <unsigned long long> ctext;
+		    std::vector <unsigned long long> etext;
 		    std::vector <unsigned char> init_text;
 		    std::vector <unsigned char> ans_text;
 
@@ -930,7 +930,7 @@ else if (select_operation == 3){
 	std::cout<<"Введите название файла, который хотите зашифровать"<<std::endl;
 	std::cin>>th_filename;
 	otext = readFile(th_filename);
-	//text=convtoULL(otext);
+	text=convtoULL(otext);
 //test(text);
 	std::cout<<"Введите название файла ключа"<<std::endl;
 	std::cin>>key_string;
@@ -952,7 +952,7 @@ else if (select_operation == 3){
 	switch (mode){
 
 	case 1:
-		ecb(1, otext, ctext, etext, key);
+		ecb(1, text, ctext, etext, key);
 	//	writeFile(cfile, ctext);
 			break;
 	case 2:
@@ -987,7 +987,7 @@ else if (select_operation == 4){
 		switch (mode){
 
 		case 1:
-			ecb(0, otext, ctext, etext, key);
+			ecb(0, text, ctext, etext, key);
 			//writeFile(efile, etext);
 
 					break;
